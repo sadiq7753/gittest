@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
 <meta http-equiv="Content-Language" content="en-us"> 
 
-<link href="fancy.css" rel="stylesheet" type="text/css">
+
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
 <script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
@@ -16,6 +16,19 @@
 <script>
 
 var id = (Math.random().toString(10) + '0000000000000000000').substr(2, 4);
+
+var peer = new Peer(id, {
+//	host: '127.0.0.1',
+//	port: 9000,
+//  path: '/',	
+	key: '5zw2gd3c6yw1xlxr',
+    debug: 3,
+});
+
+peer.on('open', function(id){
+	console.log(id);
+//  $('#pid').text(id);
+});
 
 document.querySelector('input[type=file]').onchange = function() {
     var file = this.files[0];
