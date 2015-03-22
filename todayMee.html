@@ -5,8 +5,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
 <meta http-equiv="Content-Language" content="en-us"> 
 
-
-
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
 <script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
 </head>
@@ -27,24 +25,33 @@ var peer = new Peer(id, {
 
 peer.on('open', function(id){
 	console.log(id);
-//  $('#pid').text(id);
 });
 
-document.querySelector('input[type=file]').onchange = function() {
-    var file = this.files[0];
+ function connectToPeer(){
+	var peerid = document.getElementById('peerid');
+	var dataConnection = peer.connect(peerid, {
+		metadata: 'no',
+		label: 'label',
+		serialization: 'json'
+	});
+ }
+
+
+
+function selectFile(evt) {
+    var file = document.getElementById('files').files[0];
+	var reader = new window.FileReader();
+	reader.readAsDataURL(file);
+	reader.onload = onReadAsDataURL;	
 };
 
 //---Read from The Disk..
-var reader = new window.FileReader();
-reader.readAsDataURL(file);
-reader.onload = onReadAsDataURL;
-
-var chunkLength = 1000;
 
 //--Make Chunks and Send via dataChannel...
 function onReadAsDataURL(event, text) {
     var data = {}; // data object to transmit over data channel
-
+	var chunkLength = 1000;
+	
     if (event) text = event.target.result; // on first invocation
 
     if (text.length > chunkLength) {
@@ -61,7 +68,7 @@ function onReadAsDataURL(event, text) {
         onReadAsDataURL(null, remainingDataURL); // continue transmitting
     }, 500)
 }
-//---REceive and Save to Disk..
+//---Receive and Save to Disk..
 var arrayToStoreChunks = [];
 dataChannel.onmessage = function (event) {
     var data = JSON.parse(event.data);
@@ -76,7 +83,8 @@ dataChannel.onmessage = function (event) {
 
  </script>
  
-<input type="file" id="files" name="files[]" multiple /> 
+ <input type="file" id="files" name="files[]" multiple /> 
+ <button id="send" onclick="selectFile()" >Send</button>
  
 </body>
 </html>
