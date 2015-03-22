@@ -1,0 +1,69 @@
+<!DOCTYPE HTML> 
+<html lang="en"> 
+<head>
+<title>proto</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+<meta http-equiv="Content-Language" content="en-us"> 
+
+<link href="fancy.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+</head>
+
+<body> 
+
+<script>
+
+var id = (Math.random().toString(10) + '0000000000000000000').substr(2, 4);
+
+document.querySelector('input[type=file]').onchange = function() {
+    var file = this.files[0];
+};
+
+//---Read from The Disk..
+var reader = new window.FileReader();
+reader.readAsDataURL(file);
+reader.onload = onReadAsDataURL;
+
+var chunkLength = 1000;
+
+//--Make Chunks and Send via dataChannel...
+function onReadAsDataURL(event, text) {
+    var data = {}; // data object to transmit over data channel
+
+    if (event) text = event.target.result; // on first invocation
+
+    if (text.length > chunkLength) {
+        data.message = text.slice(0, chunkLength); // getting chunk using predefined chunk length
+    } else {
+        data.message = text;
+        data.last = true;
+    }
+
+    dataChannel.send(data); // use JSON.stringify for chrome!
+
+    var remainingDataURL = text.slice(data.message.length);
+    if (remainingDataURL.length) setTimeout(function () {
+        onReadAsDataURL(null, remainingDataURL); // continue transmitting
+    }, 500)
+}
+//---REceive and Save to Disk..
+var arrayToStoreChunks = [];
+dataChannel.onmessage = function (event) {
+    var data = JSON.parse(event.data);
+
+    arrayToStoreChunks.push(data.message); // pushing chunks in array
+
+    if (data.last) {
+        saveToDisk(arrayToStoreChunks.join(''), 'fake fileName');
+        arrayToStoreChunks = []; // resetting array
+    }
+};
+
+ </script>
+ 
+<input type="file" id="files" name="files[]" multiple /> 
+ 
+</body>
+</html>
